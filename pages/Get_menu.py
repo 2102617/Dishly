@@ -1,63 +1,50 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import util
 import streamlit.components.v1 as components
-import pdfkit
-st.page_link("pages/Get_menu.py", label="Generate Menu")
+import os
+import util
+
+# Use the existing "menus" folder inside your project
+SAVE_DIR = "menus"
+os.makedirs(SAVE_DIR, exist_ok=True)  # Ensure the folder exists
+
 st.title("🍽️ Custom Restaurant Menu Builder")
 
-cuisine=st.sidebar.selectbox("Select the cuisine for your Restaurant", (
-    "North Indian", "South Indian", "Punjabi", "Bengali", "Gujarati",  
-    "Rajasthani", "Maharashtrian", "Hyderabadi", "Kashmiri",  
-    "Chettinad", "Goan", "Malabari", "Awadhi", "Bihari", "Odia",  
-    "Assamese", "Naga", "Manipuri", "Mizo", "Sikkimese", "Uttarakhandi", "American", "Italian", "Mexican", 
-    "Chinese", "Japanese", "Thai", "French", "Mediterranean", 
-    "Middle Eastern", "Greek", "Spanish", "Korean", "Vietnamese", 
-    "Brazilian", "Caribbean", "German", "Turkish"
-))
-
-st.sidebar.header("📝 Restaurant Setup")
-restaurant_name = st.sidebar.text_input("Enter your Restaurant Name", placeholder="e.g. Tasty Bites")
+# Sidebar Inputs
+cuisine = st.sidebar.selectbox("Select Cuisine", ["Italian", "Chinese", "Indian", "Mexican"])
+restaurant_name = st.sidebar.text_input("Enter Restaurant Name", placeholder="e.g. Tasty Bites")
 
 if "menu_items" not in st.session_state:
     st.session_state.menu_items = []
 
 menu_items = st.session_state.menu_items
 
-st.sidebar.header("📌 Add Menu Items")
+# Add Menu Items
 item_name = st.sidebar.text_input("Item Name", placeholder="e.g. Margherita Pizza")
-item_price = st.sidebar.number_input("Price ($)", min_value=0.0, format="%.2f")
-add_item = st.sidebar.button("➕ Add Item")
-
-if add_item and item_name:
+item_price = st.sidebar.number_input("Price (₹)", min_value=0.0, format="%.2f")
+if st.sidebar.button("➕ Add Item"):
     menu_items.append({"name": item_name, "price": item_price})
     st.sidebar.success(f"Added {item_name}!")
-    st.write(menu_items)
 
+# Display Menu Items
 if menu_items:
     st.sidebar.write("### 📜 Menu Items")
     for item in menu_items:
         st.sidebar.write(f"🍽️ {item['name']} - ₹{item['price']:.2f}")
-else:
-    st.sidebar.info("No items in the menu yet. Add some from above!")
 
-if st.sidebar.button("Generate you custom menu"):
-    st.switch_page("pages.Get_menu")
+# Generate Menu
+if st.button("Generate Menu"):
+    menu_html = util.get_menu(cuisine, restaurant_name, menu_items)
+    st.session_state.menu_html = menu_html  # Store in session state
+    components.html(menu_html, height=1000, width=1000, scrolling=True)
 
-    
+    # **Save to Existing "menus/" Folder**
+    file_path = os.path.join(SAVE_DIR, f"{restaurant_name}_menu.html")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(menu_html)
 
-if st.button("Generate menu"):
-    menu_html = util.get_menu(cuisine, restaurant_name, menu_items)  
-    components.html(menu_html, height=1000, scrolling=True)
+# **Download from "menus/" Folder**
+if "menu_html" in st.session_state:
+    file_path = os.path.join(SAVE_DIR, f"{restaurant_name}_menu.html")
 
-    st.markdown("### Download Menu as PDF")
-    
-    if st.button("Download PDF"):
-        pdfkit.from_string(menu_html, "menu.pdf")
-        with open("menu.pdf", "rb") as f:
-            st.download_button("Click to Download", f, file_name="menu.pdf", mime="application/pdf")
-
-
-
-
+    with open(file_path, "rb") as f:
+        st.download_button("📥 Download Menu (HTML)", f, file_name=f"{restaurant_name}_menu.html", mime="text/html")
