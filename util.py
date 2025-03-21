@@ -51,7 +51,7 @@ def get_dishes(dish_items):
 
     - Provide a short description of each dish.
     - Include an image reference
-    - Attach a reference link for cooking guidance(only give valid links which are publicly available)
+    - Attach a reference link for cooking guidance(wikipedia, youtube, etc)
      """
     response = llm1.invoke(prompt)
     return response.content

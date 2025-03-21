@@ -5,7 +5,8 @@ import numpy as np
 import streamlit as st
 
 # Set page configuration
-st.set_page_config(page_title="Dishly - Your Restaurant Business Partner", page_icon="🍽", layout="centered")# Title and Subtitle
+st.set_page_config(page_title="Dishly - Your Restaurant Business Partner", page_icon="🍽", layout="centered")
+# Title and Subtitle
 st.title("🍽 Welcome to Dishly – Your Ultimate Restaurant Business Partner!")
 st.markdown(
     """
